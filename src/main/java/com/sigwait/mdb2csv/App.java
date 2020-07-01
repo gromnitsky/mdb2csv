@@ -14,7 +14,7 @@ public class App {
         var jet = new Jet(args[0]);
         if (args.length == 1) { // just list all tables
             jet.tables.forEach(v -> {
-                    if (!opt.cmd.hasOption("a") && jet.TableIsLinked(v))
+                    if (!opt.cmd.hasOption("a") && jet.is_table_linked(v))
                         return;
                     System.out.println(v);
                 });
@@ -64,7 +64,7 @@ class Jet {
             U.err("db open: " + e.getMessage());
         }
     }
-    Boolean TableIsLinked(String name) {
+    Boolean is_table_linked(String name) {
         try {
             return this.db.getTableMetaData(name).isLinked();
         } catch (IOException e) {
