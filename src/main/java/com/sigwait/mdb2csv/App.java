@@ -48,8 +48,10 @@ class Opt {
             U.err(e.getMessage());
         }
     }
-    void usage() {       // FIXME: write to stderr
-        new HelpFormatter().printHelp(U.argv0() + " [-a] [-p password] file.mdb [table]", opt);
+    void usage() {
+        var pw = new PrintWriter(System.err, true);
+        new HelpFormatter().printHelp(pw, 74, U.argv0() + " file.mdb [table]",
+                                      null, opt, 1, 3, null, true);
     }
 }
 
