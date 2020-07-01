@@ -11,7 +11,7 @@ public class App {
         var opt = new Opt(args); args = opt.cmd.getArgs();
         if (args.length == 0) { opt.usage(); System.exit(1); }
 
-        var jet = new Jet(args[0]);
+        var jet = new Jet(args[0], opt.cmd.getOptionValue("p", null));
         if (args.length == 1) { // just list all tables
             jet.tables.forEach(v -> {
                     if (!opt.cmd.hasOption("a") && jet.is_table_linked(v))
@@ -56,11 +56,14 @@ class Opt {
 class Jet {
     Database db;
     Set<String> tables;
-    Jet(String name) {
+    Jet(String name, String password) {
         try {
-            db = DatabaseBuilder.open(new File(name));
+            db = CryptCodecUtil.setProvider(new DatabaseBuilder(new File(name))
+                                            .setReadOnly(true), password)
+                .open();
             tables = db.getTableNames();
-        } catch (IOException e) {
+        } catch (com.healthmarketscience.jackcess.impl.UnsupportedCodecException
+                 | InvalidCredentialsException | IOException e) {
             U.err("db open: " + e.getMessage());
         }
     }
