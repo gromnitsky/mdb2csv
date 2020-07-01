@@ -22,12 +22,11 @@ $(out)/.dependency: pom.xml
 
 run: $(java.dest)
 	java -cp $(classes)/$(java.src.path):$(vendor.cp) com.sigwait.mdb2csv.App
+jshell:; jshell --class-path $(vendor.cp)
 
 
 
 jar := $(out)/main.jar
-mf:; unzip -p $(jar) META-INF/MANIFEST.MF
-
 $(jar): manifest.txt $(java.dest)
 	jar cvfm $(jar) $< -C $(classes)/$(java.src.path) .
 

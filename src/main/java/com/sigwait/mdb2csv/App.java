@@ -4,17 +4,20 @@ import java.util.*;
 import java.io.*;
 import com.healthmarketscience.jackcess.*;
 import com.healthmarketscience.jackcess.util.*;
+import org.apache.commons.cli.*;
 
 public class App {
     public static void main(String[] args) {
-        if (args.length == 0) {
-            System.err.printf("Usage: %s %s\n", U.argv0(), "file.mdb [table]");
-            System.exit(1);
-        }
+        var opt = new Opt(args); args = opt.cmd.getArgs();
+        if (args.length == 0) { opt.usage(); System.exit(1); }
 
         var jet = new Jet(args[0]);
         if (args.length == 1) { // just list all tables
-            jet.tables.forEach(v -> System.out.println(v));
+            jet.tables.forEach(v -> {
+                    if (!opt.cmd.hasOption("a") && jet.TableIsLinked(v))
+                        return;
+                    System.out.println(v);
+                });
             System.exit(0);
         }
 
@@ -31,10 +34,29 @@ public class App {
     }
 }
 
+class Opt {
+    CommandLine cmd;
+    Options opt;
+    Opt(String[] args) {
+        opt = new Options();
+        opt.addOption("a", false, "print linked tables too");
+        opt.addOption("p", null, true, "password");
+        try {
+            cmd = new DefaultParser().parse(opt, args);
+        } catch (ParseException e) {
+            usage();
+            U.err(e.getMessage());
+        }
+    }
+    void usage() {       // FIXME: write to stderr
+        new HelpFormatter().printHelp(U.argv0() + " [-a] [-p password] file.mdb [table]", opt);
+    }
+}
+
 class Jet {
-    public Database db;
-    public Set<String> tables;
-    public Jet(String name) {
+    Database db;
+    Set<String> tables;
+    Jet(String name) {
         try {
             db = DatabaseBuilder.open(new File(name));
             tables = db.getTableNames();
@@ -42,13 +64,21 @@ class Jet {
             U.err("db open: " + e.getMessage());
         }
     }
+    Boolean TableIsLinked(String name) {
+        try {
+            return this.db.getTableMetaData(name).isLinked();
+        } catch (IOException e) {
+            U.err(e.getMessage());
+        }
+        return false;
+    }
 }
 
 class U {
-    public static String argv0() {
+    static String argv0() {
         var p = App.class.getPackageName().split("\\."); return p[p.length-1];
     }
-    public static void err(String msg) {
+    static void err(String msg) {
         System.err.printf("%s error: %s\n", argv0(), msg); System.exit(1);
     }
 }
