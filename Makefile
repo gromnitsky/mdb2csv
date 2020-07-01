@@ -1,28 +1,24 @@
 out := target
 classes := $(out)/classes
+Main-Class := com.sigwait.mdb2csv.App
 
 java.src.path := src/main/java
 java.src := $(shell find $(java.src.path) -type f -name \*.java)
 java.dest := $(patsubst $(java.src.path)/%.java, $(classes)/$(java.src.path)/%.class, $(java.src))
 
 vendor.dir := $(out)/dependency
-vendor.src = $(wildcard $(vendor.dir)/*)
-blank :=
-space := $(blank) $(blank)
-vendor.cp = $(subst $(space),:,$(vendor.src))
-
 classes: $(java.dest)
 $(classes)/%.class: %.java $(out)/.dependency
 	$(mkdir)
-	javac $< -d $(classes)/$(java.src.path) -cp $(vendor.cp)
+	javac $< -d $(classes)/$(java.src.path) -cp "$(vendor.dir)/*"
 
 $(out)/.dependency: pom.xml
 	mvn -B dependency:copy-dependencies
 	touch $@
 
 run: $(java.dest)
-	java -cp $(classes)/$(java.src.path):$(vendor.cp) com.sigwait.mdb2csv.App
-jshell:; jshell --class-path $(vendor.cp)
+	java -cp "$(classes)/$(java.src.path):$(vendor.dir)/*" $(Main-Class)
+jshell:; jshell --class-path "$(vendor.dir)/*"
 
 
 
@@ -37,7 +33,7 @@ $(out)/one-jar-boot/boot-manifest.mf: one-jar-boot-0.97.jar $(jar)
 	mkdir -p $(dir $@)/main $(dir $@)/lib
 	cp $(jar) $(dir $@)/main
 	cp $(vendor.dir)/* $(dir $@)/lib
-	echo One-Jar-Main-Class: com.sigwait.mdb2csv.App >> $@
+	echo One-Jar-Main-Class: $(Main-Class) >> $@
 
 bundle := $(out)/$(shell adieu -pe '$$("project>artifactId, project>version").get().map(v => $$(v).text()).join`-`' < pom.xml).jar
 bundle: $(bundle)
