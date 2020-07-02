@@ -15,10 +15,17 @@ Run `make bundle`. Expected result: `target/mdb2csv-x.y.z.jar`.
 
 ## Usage
 
+~~~
+$ java -jar mdb2csv-0.0.1.jar
+usage: mdb2csv file.mdb [table] [-a] [-p <arg>]
+ -a         print linked tables too
+ -p <arg>   password
+~~~
+
 List all tables:
 
 ~~~
-$ java -jar mdb2csv-0.0.1.jar jet4.mdb
+$ java -jar mdb2csv-0.0.1.jar -a jet4.mdb
 AttributeValues
 Calendar
 ...
@@ -38,13 +45,13 @@ Export all tables from a db:
 
 ~~~
 (IFS=$'\n'; for t in `java -jar mdb2csv-0.0.1.jar jet4.mdb`; do
-  echo $t; java -jar target/mdb2csv-0.0.1.jar jet4.mdb "$t" > "table.$t.csv";
+  echo $t; java -jar mdb2csv-0.0.1.jar jet4.mdb "$t" > "table.$t.csv";
 done)
 ~~~
 
 ## See also
 
-[Why Java Sucks](https://tech.jonathangardner.net/wiki/Why_Java_Sucks)
+[Why Java Sucks](https://tech.jonathangardner.net/wiki/Why_Java_Sucks).
 
 ## License
 
